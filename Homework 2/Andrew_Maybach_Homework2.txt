@@ -1,0 +1,83 @@
+﻿USE NewPVF
+--1 This expression returns Customer Name, Customer ID
+--  and Order ID for all Orders for 'Coffee Tables'.
+
+--2
+--𝜋𝑂𝑟𝑑𝑒𝑟_Date (𝜋𝑂𝑟𝑑𝑒𝑟 𝐼𝐷(𝑂𝑟𝑑𝑒𝑟_𝐿𝑖𝑛𝑒_𝑡 ⨝ 𝜎𝑃𝑟𝑜𝑑𝑢𝑐t 𝑁𝑎𝑚𝑒= ′𝐶𝑜𝑓𝑓𝑒𝑒 𝑇𝑎𝑏𝑙𝑒 ′ and 𝜎Product Name = ‘End Table’  𝑃𝑟𝑜𝑑𝑢𝑐𝑡_𝑡) ⨝ Order_t) )
+
+-- 3
+
+
+SELECT Customer_name,Customer_t.Customer_ID,Order_t.Order_ID
+FROM Order_t 
+INNER JOIN Order_line_t 
+ON Order_t.Order_ID = Order_line_t.Order_ID
+INNER JOIN Customer_t 
+ON Customer_t.Customer_ID = Order_t.Customer_ID
+WHERE Product_ID IN (
+	SELECT Product_ID
+	FROM Product_t
+	WHERE Product_Name = 'Coffee Table')
+;
+
+--4
+
+SELECT Order_t.Order_ID, Order_t.Order_Date
+FROM Order_Line_t
+INNER JOIN Order_t
+ON 
+Order_Line_t.Order_ID = Order_t.Order_ID
+WHERE Product_ID IN (
+	SELECT Product_ID
+	FROM Product_t
+	WHERE (
+			Product_Name = 'Coffee Table'
+			)
+	)
+
+UNION
+
+SELECT Order_t.Order_ID, Order_t.Order_Date
+FROM Order_Line_t
+INNER JOIN Order_t
+ON 
+Order_Line_t.Order_ID = Order_t.Order_ID
+WHERE Product_ID IN (
+	SELECT Product_ID
+	FROM Product_t
+	WHERE (
+			Product_Name = 'End Table'
+			)
+	)
+
+;
+
+--5
+
+SELECT Order_t.Customer_ID,Customer_Name
+FROM Order_t
+INNER JOIN Customer_t ON Customer_t.Customer_ID = Order_t.Customer_ID
+GROUP BY Order_t.Customer_ID, Customer_name
+HAVING COUNT(Order_t.Customer_ID)>=2
+;
+
+--6
+					
+
+SELECT a.Customer_ID, a.Order_ID,a.Order_Date
+FROM (SELECT *, ROW_NUMBER() OVER(PARTITION BY Customer_ID 
+	ORDER BY Order_Date DESC) AS ActivityRank
+	FROM Order_t)a 
+WHERE a.ActivityRank <=2
+Order by  a.Order_Date,a.Customer_ID DESC
+;
+
+
+
+
+		
+
+	
+	
+
+

@@ -1,0 +1,122 @@
+Problem 1:
+/*DDL for Problem 1*/
+CREATE DATABASE ExtraHwkDB
+
+GO 
+
+USE ExtraHwkDB
+
+CREATE TABLE Firm ( 
+
+	Firm_ID				int PRIMARY KEY NOT NULL,
+	Firm_Name			Varchar(10),
+	Rollup_level		int,
+	
+	Firm_Parent			int
+
+	)
+
+GO
+
+INSERT INTO Firm values ( 1, 'Firm_1' , 1, Null)
+INSERT INTO Firm values ( 2, 'Firm_2' , 2, 1)
+INSERT INTO Firm values ( 3, 'Firm_3' , 3, 2)
+INSERT INTO Firm values ( 4, 'Firm_4' , 3, 2)
+INSERT INTO Firm values ( 5, 'Firm_5' , 4, 4)
+INSERT INTO Firm values ( 6, 'Firm_6' , 4, 4)
+INSERT INTO Firm values ( 7, 'Firm_7' , 2, 1)
+INSERT INTO Firm values ( 8, 'Firm_8' , 3, 7)
+INSERT INTO Firm values ( 9, 'Firm_9' , 3, 7)
+INSERT INTO Firm values ( 10, 'Firm_10' , 4, 9)
+INSERT INTO Firm values ( 11, 'Firm_11' , 5, 10)
+INSERT INTO Firm values ( 12, 'Firm_12' , 5, 10)
+INSERT INTO Firm values ( 13, 'Firm_13' , 4, 9)
+;
+
+--------------------------------------------------------
+Problem 2:
+
+USE ExtraHwkDB
+
+GO
+
+SELECT Firm_Id
+FROM Firm
+WHERE Firm_ID >= 7
+ORDER BY Rollup_level, Firm_ID ASC
+;
+
+--------------------------------------------------------
+Problem 3:
+/*Using SQL Server 2017*/
+USE QuizDB
+
+GO
+
+WITH answer AS (
+
+	SELECT  QuizName, Question, COUNT(Question) as Options_Count, Question_Options, COUNT(*) OVER (PARTITION BY QuizName) as col_counts
+	FROM Questions
+		JOIN Quizzes ON id = QuizID
+		JOIN Options ON Options.QuestionID = Questions.Qid
+		JOIN (
+
+			SELECT  STRING_AGG(OptionDetail,'; ') Question_Options, QuestionID 
+			FROM Options 
+			GROUP BY QuestionID) agg
+		ON agg.QuestionID  = Questions.Qid
+	GROUP BY Question,QuizName,Question_Options
+
+)
+
+
+SELECT QuizName, Question, Options_Count, Question_Options 
+FROM answer
+WHERE col_counts > 4
+;
+
+
+
+
+
+/*Using OLDER SQL Server*/
+USE QuizDB
+
+GO
+
+WITH answer AS (
+
+	SELECT  QuizName, Question, COUNT(Question) as Options_Count, Question_Options, count(*) over (partition by QuizName) as col_counts
+	FROM Questions
+		JOIN Quizzes ON id = QuizID
+		JOIN Options ON Options.QuestionID = Questions.Qid
+		JOIN (
+		
+			SELECT  QuestionID, STUFF((SELECT ',' + OptionDetail 
+			FROM Options t1 
+			WHERE t1.QuestionID = t2.QuestionID 
+			FOR XML PATH ('')), 1, 1, '') as Question_Options
+			FROM Options t2
+			Group by t2.QuestionID
+			) agg
+		ON agg.QuestionID  = Questions.Qid
+	GROUP BY Question,QuizName,Question_Options
+		
+)		
+			
+SELECT QuizName, Question, Options_Count, Question_Options 
+FROM answer
+WHERE col_counts > 4
+;
+ 
+--------------------------------------------------------
+Problem 4:
+
+m+(p*m)*c
+p=100
+m= 400/100 = 4 
+c = 3+1+1 = 5
+
+4 +(100*4)*5 = 2004
+
+
